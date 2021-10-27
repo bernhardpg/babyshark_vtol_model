@@ -1,7 +1,7 @@
 clc; close all; clear all;
 
 % Read example maneuver
-recorded_input = readmatrix("example_inputs/yaw_maneuver_left_input.csv");
+recorded_input = readmatrix("example_inputs/pitch_maneuver_input.csv");
 dt = readmatrix("example_inputs/dt.csv");
 t_end = length(recorded_input) * dt - dt;
 tspan = [0 t_end];
@@ -22,12 +22,15 @@ y_0 = [model.u_trim 0 model.w_trim ...
 % State: [u, v, w, p, q, r, phi, theta, delta_a, delta_e, delta_r];
 [t_sim, y_sim] = ode45(@(t,y) model.f(t, y), tspan, y_0);
 
-%%
-visualizer = AircraftVisualizer();
-visualizer.plot_aircraft();
+figure
+plot(t_sim, y_sim(:,7))
+title("roll")
+figure
+plot(t_sim, y_sim(:,8))
+title("pitch")
 
-%%
+
+visualizer = AircraftVisualizer();
 visualizer.plot_trajectory(t_sim, y_sim);
-visualizer.set_render_settings();
 
 

@@ -102,19 +102,74 @@ classdef AircraftVisualizer
              obj.render_plot();
         end
         
-        function plot_trajectory(obj, t_trajectory, x_trajectory)
+        function [t, x] = prepare_trajectory(obj, t_trajectory, x_trajectory)
             % Make sure dt is constant for trajectory
             t_0 = t_trajectory(1);
             t_end = t_trajectory(end);
             t = t_0:obj.timestep:t_end;
-            x = interp1(t_trajectory,x_trajectory,t);
-            
-            % Extract states relevant for plotting
+            x = interp1(t_trajectory,x_trajectory,t); 
+        end
+        
+        function plot_trajectory(obj, t_trajectory, x_trajectory)
+            [t, x] = obj.prepare_trajectory(t_trajectory, x_trajectory);
+
             phi = x(:,7);
             theta = x(:,8);
             psi = zeros(size(phi));
+
+            % Define the figure properties
+            ax = axes('position',[0.0 0.0 1 1]);
+            axis off
+            screensize = get(0,'ScreenSize');
+            set(gcf,'Position', ...
+            [screensize(3)/40 screensize(4)/12 screensize(3)/2*1.0 screensize(3)/2.2*1.0],...
+            'Visible','on');
+            set(ax,'color','none');
+            axis('equal')
+            hold on;
+            cameratoolbar('Show')
+
+            aircraft_transf = hgtransform('Parent', ax);
+            patch('Faces', obj.Model3D.stl_data.faces, ...
+            'Vertices', obj.Model3D.stl_data.vertices, ...
+             'FaceColor', obj.Model3D.color, ...
+             'FaceAlpha', obj.Model3D.alpha, ...
+             'EdgeColor',       'none',        ...
+             'FaceLighting',    'gouraud',     ...
+             'AmbientStrength', 0.15,...
+             'Parent', aircraft_transf); % Assign the aircraft to the transformation
+            scatter3(0,0,0,'filled');
+
+            % Fixing the axes scaling and setting a nice view angle
+            axis('equal');
+            aircraft_dimensions = max(max(sqrt(sum(obj.Model3D.stl_data.vertices.^2, 2))));
+            axis([-1 1 -1 1 -1 1] * 1.0 * aircraft_dimensions)
+            set(gcf,'Color',[1 1 1])
+            axis off
+            view([30 10])
+            % Add a camera light, and tone down the specular highlighting
+            camlight('left');
+            material('dull');
+
+            tic;
+            for i = 1:length(t)
+                % Rotate the aircraft rigid-body
+                Mx = makehgtform('xrotate', phi(i));
+                My = makehgtform('yrotate', -theta(i));
+                Mz = makehgtform('zrotate', psi(i));
+                set(aircraft_transf, 'Matrix', Mx*My*Mz);
+
+                % Control the animation speed
+                if obj.timestep * i - toc > 0
+                    pause(max(0, obj.timestep * i - toc))
+                end
+            end
+
+        end
+        
+        function lol()
+            t = hgtransform('Parent', ax);
             
-            figure;
             hsp = subplot(1, 1, 1);
             grid(hsp, 'on');
             box(hsp, 'on');
