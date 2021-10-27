@@ -1,6 +1,9 @@
 classdef AircraftVisualizer
     properties
         Model3D
+        aircraft_transformation
+        aircraft_dimensions
+        ax
         timestep = 0.1
     end
     
@@ -16,6 +19,10 @@ classdef AircraftVisualizer
             obj.Model3D.stl_data.vertices = model.vertices;
             obj.Model3D.stl_data.faces = model.faces;
             obj = obj.initialize_aircraft_model();
+            
+            obj.aircraft_dimensions = max(max(sqrt(sum(obj.Model3D.stl_data.vertices.^2, 2))));
+            obj.ax = obj.create_ax_object();
+            obj.aircraft_transformation = hgtransform('Parent', obj.ax); % Transformation object that is used to rotate the aircraft            
         end
         function obj = initialize_aircraft_model(obj)
             % Import an STL mesh, returning a PATCH-compatible face-vertex structure
@@ -75,18 +82,14 @@ classdef AircraftVisualizer
             V_rotated = V_rotated * Rz';
         end
         
-        function render_plot(~)
-            % Add a camera light, and tone down the specular highlighting
-            camlight('headlight');
+        function render_plot(obj)
+            axis('equal');
+            axis([-1 1 -1 1 -1 1] * 1.0 * obj.aircraft_dimensions)
+            set(gcf,'Color',[1 1 1])
+            axis off
+            view([30 10])
+            camlight('left');
             material('dull');
-
-            % Fix the axes scaling, and set a nice view angle
-            axis('image');
-            %view(view_angle);
-            xlabel('x [m]')
-            ylabel('y [m]')
-            zlabel('z [m]')
-            grid on
         end
         
         function plot_aircraft(obj)
@@ -96,9 +99,9 @@ classdef AircraftVisualizer
                  'FaceAlpha', obj.Model3D.alpha, ...
                  'EdgeColor',       'none',        ...
                  'FaceLighting',    'gouraud',     ...
-                 'AmbientStrength', 0.15); hold on
+                 'AmbientStrength', 0.15,...
+                 'Parent', obj.aircraft_transformation); hold on
              scatter3(0,0,0,'filled');
-             
              obj.render_plot();
         end
         
@@ -116,40 +119,11 @@ classdef AircraftVisualizer
             phi = x(:,7);
             theta = x(:,8);
             psi = zeros(size(phi));
-
-            % Define the figure properties
-            ax = axes('position',[0.0 0.0 1 1]);
-            axis off
-            screensize = get(0,'ScreenSize');
-            set(gcf,'Position', ...
-            [screensize(3)/40 screensize(4)/12 screensize(3)/2*1.0 screensize(3)/2.2*1.0],...
-            'Visible','on');
-            set(ax,'color','none');
-            axis('equal')
-            hold on;
-            cameratoolbar('Show')
-
-            aircraft_transf = hgtransform('Parent', ax);
-            patch('Faces', obj.Model3D.stl_data.faces, ...
-            'Vertices', obj.Model3D.stl_data.vertices, ...
-             'FaceColor', obj.Model3D.color, ...
-             'FaceAlpha', obj.Model3D.alpha, ...
-             'EdgeColor',       'none',        ...
-             'FaceLighting',    'gouraud',     ...
-             'AmbientStrength', 0.15,...
-             'Parent', aircraft_transf); % Assign the aircraft to the transformation
-            scatter3(0,0,0,'filled');
-
-            % Fixing the axes scaling and setting a nice view angle
-            axis('equal');
-            aircraft_dimensions = max(max(sqrt(sum(obj.Model3D.stl_data.vertices.^2, 2))));
-            axis([-1 1 -1 1 -1 1] * 1.0 * aircraft_dimensions)
-            set(gcf,'Color',[1 1 1])
-            axis off
-            view([30 10])
-            % Add a camera light, and tone down the specular highlighting
-            camlight('left');
-            material('dull');
+            
+            obj.plot_aircraft();
+            time_text_hdl = text(0, 0, 0.55 * obj.aircraft_dimensions * 1.5, ...
+                't = 0 sec',...
+                'FontSize', 20);
 
             tic;
             for i = 1:length(t)
@@ -157,34 +131,29 @@ classdef AircraftVisualizer
                 Mx = makehgtform('xrotate', phi(i));
                 My = makehgtform('yrotate', -theta(i));
                 Mz = makehgtform('zrotate', psi(i));
-                set(aircraft_transf, 'Matrix', Mx*My*Mz);
+                set(obj.aircraft_transformation, 'Matrix', Mx*My*Mz);
+                
+                % Update text
+                set(time_text_hdl, 'String', sprintf('t = %3.2f sec',t(i)))
 
                 % Control the animation speed
                 if obj.timestep * i - toc > 0
                     pause(max(0, obj.timestep * i - toc))
                 end
             end
-
         end
         
-        function lol()
-            t = hgtransform('Parent', ax);
-            
-            hsp = subplot(1, 1, 1);
-            grid(hsp, 'on');
-            box(hsp, 'on');
-            tic;
-            for i = 1:length(t)
-                hold(hsp, 'off');
-                %plot(t(1:i), phi(1:i), '-b');
-                obj.plot_aircraft(obj.model_vertices_0)
-                hold(hsp, 'on');
-                text(0.5,0.5,"t = " + t(i), 'FontSize', 20);
-                xlim(hsp, [0, t_end]);
-                ylim(hsp, [0, +1.2]);
-                pause(obj.timestep)
-            end
-            
+        function ax = create_ax_object(~)
+            ax = axes('position',[0.0 0.0 1 1]);
+            axis off
+            screensize = get(0,'ScreenSize');
+            set(gcf,'Position', ...
+                [screensize(3)/40 screensize(4)/12 screensize(3)/2*1.0 screensize(3)/2.2*1.0],...
+                'Visible','on');
+            set(ax,'color','none');
+            axis('equal')
+            hold on;
+            cameratoolbar('Show')
         end
     end
 end
