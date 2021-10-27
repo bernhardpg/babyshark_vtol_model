@@ -1,9 +1,12 @@
 classdef AircraftVisualizer
     properties
         Model3D
+        TextHandles = {};
         aircraft_transformation
         aircraft_dimensions
-        ax
+        ax_3d
+        input_axs
+        fig
         timestep = 0.02
     end
     
@@ -21,8 +24,8 @@ classdef AircraftVisualizer
             obj = obj.initialize_aircraft_model();
             
             obj.aircraft_dimensions = max(max(sqrt(sum(obj.Model3D.stl_data.vertices.^2, 2))));
-            obj.ax = obj.create_ax_object();
-            obj.aircraft_transformation = hgtransform('Parent', obj.ax); % Transformation object that is used to rotate the aircraft            
+            obj = obj.create_ax_object();
+            obj.aircraft_transformation = hgtransform('Parent', obj.ax_3d); % Transformation object that is used to rotate the aircraft            
         end
         function obj = initialize_aircraft_model(obj)
             % Import an STL mesh, returning a PATCH-compatible face-vertex structure
@@ -83,21 +86,17 @@ classdef AircraftVisualizer
         end
         
         function render_plot(obj)
-            axis('equal');
-            obj.update_axis()
-            set(gcf,'Color',[1 1 1])
-            view([30 10])
-            camlight('left');
-            material('dull');
-        end
-        
-        function update_axis(obj)
+            axis(obj.ax_3d, 'equal');
             viewbox = [-1 1 -1 1 -1 1] * 2 * obj.aircraft_dimensions;
-            axis(viewbox);
+            axis(obj.ax_3d, viewbox);
+            set(gcf,'Color',[1 1 1])
+            view(obj.ax_3d, [30 10])
+            camlight(obj.ax_3d, 'left');
+            material(obj.ax_3d, 'dull');
         end
         
         function plot_aircraft(obj)
-            patch('Faces', obj.Model3D.stl_data.faces, ...
+            patch(obj.ax_3d, 'Faces', obj.Model3D.stl_data.faces, ...
                 'Vertices', obj.Model3D.stl_data.vertices, ...
                  'FaceColor', obj.Model3D.color, ...
                  'FaceAlpha', obj.Model3D.alpha, ...
@@ -105,7 +104,7 @@ classdef AircraftVisualizer
                  'FaceLighting',    'gouraud',     ...
                  'AmbientStrength', 0.15,...
                  'Parent', obj.aircraft_transformation); hold on
-             scatter3(0,0,0,'filled');
+             scatter3(obj.ax_3d, 0,0,0,'filled');
              obj.render_plot();
         end
         
@@ -115,6 +114,21 @@ classdef AircraftVisualizer
             t_end = t_trajectory(end);
             t = t_0:obj.timestep:t_end;
             x = interp1(t_trajectory,x_trajectory,t); 
+        end
+        
+        function obj = plot_text(obj)
+            obj.TextHandles.time_text_hdl = text(obj.ax_3d, 0.55 * obj.aircraft_dimensions * 1.5, 0, 1 * obj.aircraft_dimensions * 1.5, ...
+                't = 0 sec',...
+                'FontSize', 20);
+            obj.TextHandles.n_text_hdl = text(obj.ax_3d, 0.55 * obj.aircraft_dimensions * 1.5, 0, 0.9 * obj.aircraft_dimensions * 1.5, ...
+                'north = 0 m',...
+                'FontSize', 20);
+            obj.TextHandles.e_text_hdl = text(obj.ax_3d, 0.55 * obj.aircraft_dimensions * 1.5, 0, 0.8 * obj.aircraft_dimensions * 1.5, ...
+                'east = 0 m',...
+                'FontSize', 20);
+            obj.TextHandles.h_text_hdl = text(obj.ax_3d, 0.55 * obj.aircraft_dimensions * 1.5, 0, 0.7 * obj.aircraft_dimensions * 1.5, ...
+                'height = 0 m',...
+                'FontSize', 20);
         end
         
         function plot_trajectory(obj, t_trajectory, x_trajectory)
@@ -128,19 +142,8 @@ classdef AircraftVisualizer
             psi = x(:,12);
             
             obj.plot_aircraft();
-            time_text_hdl = text(0.55 * obj.aircraft_dimensions * 1.5, 0, 1 * obj.aircraft_dimensions * 1.5, ...
-                't = 0 sec',...
-                'FontSize', 20);
-            n_text_hdl = text(0.55 * obj.aircraft_dimensions * 1.5, 0, 0.9 * obj.aircraft_dimensions * 1.5, ...
-                'north = 0 m',...
-                'FontSize', 20);
-            e_text_hdl = text(0.55 * obj.aircraft_dimensions * 1.5, 0, 0.8 * obj.aircraft_dimensions * 1.5, ...
-                'east = 0 m',...
-                'FontSize', 20);
-            h_text_hdl = text(0.55 * obj.aircraft_dimensions * 1.5, 0, 0.7 * obj.aircraft_dimensions * 1.5, ...
-                'height = 0 m',...
-                'FontSize', 20);
-
+            obj = obj.plot_text();
+           
             tic;
             for i = 1:length(t)
                 % Rotate the aircraft rigid-body
@@ -150,10 +153,10 @@ classdef AircraftVisualizer
                 set(obj.aircraft_transformation, 'Matrix', Mx*My*Mz);
                 
                 % Update text
-                set(time_text_hdl, 'String', sprintf('t = %3.2f sec',t(i)))
-                set(n_text_hdl, 'String', sprintf('north = %3.2f m',n(i)))
-                set(e_text_hdl, 'String', sprintf('east = %3.2f m',e(i)))
-                set(h_text_hdl, 'String', sprintf('height = %3.2f m',-d(i)))
+                set(obj.TextHandles.time_text_hdl, 'String', sprintf('t = %3.2f sec',t(i)))
+                set(obj.TextHandles.n_text_hdl, 'String', sprintf('north = %3.2f m',n(i)))
+                set(obj.TextHandles.e_text_hdl, 'String', sprintf('east = %3.2f m',e(i)))
+                set(obj.TextHandles.h_text_hdl, 'String', sprintf('height = %3.2f m',-d(i)))
 
                 % Control the animation speed
                 if obj.timestep * i - toc > 0
@@ -162,17 +165,38 @@ classdef AircraftVisualizer
             end
         end
         
-        function ax = create_ax_object(~)
-            ax = axes('position',[0.0 0.0 1 1]);
-            axis off
+        function obj = create_ax_object(obj)
+            obj.fig = figure;
             screensize = get(0,'ScreenSize');
             set(gcf,'Position', ...
-                [screensize(3)/40 screensize(4)/12 screensize(3)/2*1.0 screensize(3)/2.2*1.0],...
+                [screensize(3)/40 screensize(4)/12 screensize(3)/2*2 screensize(3)/2.2*1.0],...
                 'Visible','on');
-            set(ax,'color','none');
-            axis('equal')
+            
+            % 3D animation
+            obj.ax_3d = axes(obj.fig, 'position',[0.0 0.0 0.5 1]);
+            axis off
+            set(obj.ax_3d,'color','none');
+            axis(obj.ax_3d, 'equal')
             hold on;
-            cameratoolbar('Show')
+            
+            % Aircraft inputs
+            input_plot_positions = [0.5 0.7 0.2 0.15;
+                                    0.5 0.5 0.2 0.15;
+                                    0.5 0.3 0.2 0.15;
+                                    0.5 0.1 0.2 0.15;
+                                    0.75 0.7 0.2 0.15;
+                                    0.75 0.5 0.2 0.15;
+                                    0.75 0.3 0.2 0.15;
+                                    0.75 0.1 0.2 0.15];
+                                
+            input_plot_names = ["\delta_a" "\delta_e", "\delta_r" "\delta_t" ...
+                "\delta_{mr1}" "\delta_{mr2}" "\delta_{mr3}" "\delta_{mr4}"];    
+                                    
+            for i = 1:8
+                obj.input_axs(i) = axes(obj.fig, 'position', input_plot_positions(i,:));
+                plot(obj.input_axs(i), 1:15);
+                title(obj.input_axs(i), input_plot_names(i));
+            end
         end
     end
 end

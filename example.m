@@ -5,7 +5,7 @@ clc; close all; clear all;
 %%%%%%%%
 
 % Read example maneuver
-recorded_input = readmatrix("example_inputs/pitch_maneuver_input.csv");
+recorded_input = readmatrix("example_inputs/roll_maneuver_right_input.csv");
 dt = readmatrix("example_inputs/dt.csv");
 t_end = length(recorded_input) * dt - dt;
 tspan = [0 t_end];
