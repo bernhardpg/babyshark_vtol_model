@@ -21,11 +21,13 @@ y_0 = [model.u_trim 0 model.w_trim ...
 
 % State: [u, v, w, p, q, r, phi, theta, delta_a, delta_e, delta_r];
 [t_sim, y_sim] = ode45(@(t,y) model.f(t, y), tspan, y_0);
-plot(t_sim, y_sim);
 
 %%
-clc;
 visualizer = AircraftVisualizer();
 visualizer.plot_aircraft();
+
+%%
+visualizer.plot_trajectory(t_sim, y_sim);
 visualizer.set_render_settings();
+
 

@@ -1,18 +1,21 @@
 classdef AircraftVisualizer
     properties
-        stl_model
-        model_vertices
+        Model3D
+        timestep = 0.1
     end
     
     methods
         function obj = AircraftVisualizer()
-            obj.stl_model = stlread('3d_files/babyshark.stl');
+            obj.Model3D.cg_position_from_front = -0.494;
+            obj.Model3D.cg_position_from_bottom = 0.25;
+            
+            [obj.Model3D.stl_data.vertices = stlread('3d_files/babyshark.stl');
             obj = obj.initialize_aircraft_model();
         end
         function obj = initialize_aircraft_model(obj)
             % Import an STL mesh, returning a PATCH-compatible face-vertex structure
             V = obj.stl_model.vertices;
-            obj.model_faces = obmodel.faces;
+            obj.model_faces = obj.stl_model.faces;
 
             % Rotate the aircraft to initial position, with positive x-axis out of nose
             initial_phi = pi/2;
@@ -32,12 +35,10 @@ classdef AircraftVisualizer
             V = V - [aircraft_length wingspan/2 0];
 
             % Move origin to cg
-            cg_position_from_front = -0.494;
-            cg_position_from_bottom = 0.25;
-            cg_position = [cg_position_from_front 0 cg_position_from_bottom];
+            cg_position = [obj.cg_position_from_front 0 obj.cg_position_from_bottom];
             V = V - cg_position; 
             
-            obj.model_vertices = V;
+            obj.model_vertices_0 = V;
         end
         
         function V_scaled = scale_aircraft(~, wingspan, V)
@@ -81,12 +82,42 @@ classdef AircraftVisualizer
             grid on
         end
         
-        function plot_aircraft(obj, F, V)
-            patch('Faces', F, 'Vertices', V, ...
+        function plot_aircraft(obj, vertices)
+            patch('Faces', obj.model_faces, 'Vertices', vertices, ...
                  'FaceColor',       [0.8 0.8 1.0], ...
                  'EdgeColor',       'none',        ...
                  'FaceLighting',    'gouraud',     ...
                  'AmbientStrength', 0.15); hold on
+        end
+        
+        function plot_trajectory(obj, t_trajectory, x_trajectory)
+            % Make sure dt is constant for trajectory
+            t_0 = t_trajectory(1);
+            t_end = t_trajectory(end);
+            t = t_0:obj.timestep:t_end;
+            x = interp1(t_trajectory,x_trajectory,t);
+            
+            % Extract states relevant for plotting
+            phi = x(:,7);
+            theta = x(:,8);
+            psi = zeros(size(phi));
+            
+            figure;
+            hsp = subplot(1, 1, 1);
+            grid(hsp, 'on');
+            box(hsp, 'on');
+            tic;
+            for i = 1:length(t)
+                hold(hsp, 'off');
+                %plot(t(1:i), phi(1:i), '-b');
+                obj.plot_aircraft(obj.model_vertices_0)
+                hold(hsp, 'on');
+                text(0.5,0.5,"t = " + t(i), 'FontSize', 20);
+                xlim(hsp, [0, t_end]);
+                ylim(hsp, [0, +1.2]);
+                pause(obj.timestep)
+            end
+            
         end
     end
 end
