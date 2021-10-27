@@ -1,0 +1,20 @@
+clc; close all; clear all;
+
+input_function = @(t) [0; 0; 0; 0];
+model = BabysharkModel(input_function);
+
+tspan = [0 10];
+y_0 = [0 0 0 0 0 0 0 0 0 0 0];
+
+recorded_input = readmatrix("example_inputs/pitch_maneuver_input.csv");
+dt = readmatrix("example_inputs/dt.csv");
+zero_order_hold(2.0001, dt, recorded_input);
+
+[t_sim, y_sim] = ode45(@(t,y) model.f(t, y), tspan, y_0);
+
+
+
+function input_at_t = zero_order_hold(t, dt, recorded_input)
+    index = floor(t / dt);
+    input_at_t = recorded_input(index,:);
+end

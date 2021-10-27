@@ -94,8 +94,7 @@ classdef BabysharkModel
             % Unpack inputs
             input = obj.input_function(t);
             input = num2cell(input);
-            [delta_a_sp, delta_e_sp, delta_r_sp, delta_t,...
-                delta_mr_1, delta_mr_2, delta_mr_3, delta_mr_4] = input{:};
+            [delta_mr_1, delta_mr_2, delta_mr_3, delta_mr_delta_a_sp, delta_e_sp, delta_r_sp, delta_t] = input{:};
 
             % Calculate control surfaces
             delta_a_dot = obj.bound(-delta_a / obj.T_servo + delta_a_sp / obj.T_servo, -obj.delta_rate_lim, obj.delta_rate_lim);
