@@ -5,9 +5,10 @@ classdef AircraftVisualizer
         aircraft_transformation
         aircraft_dimensions
         ax_3d
-        input_axs
+        input_axs = {};
         fig
         timestep = 0.02
+        InputPlotHandles = {};
     end
     
     methods
@@ -108,6 +109,25 @@ classdef AircraftVisualizer
              obj.render_plot();
         end
         
+        function obj = plot_inputs(obj, t, x)
+            y_datasources = ["delta_a_evolution" "delta_e_evolution" "delta_r_evolution"];
+            input_plot_names = ["\delta_a" "\delta_e", "\delta_r"];
+            ylabels = ["deg [^circ]" "deg [^circ]" "deg [^circ]"];
+            
+            for i = 1:3
+                obj.InputPlotHandles{i} = plot(obj.input_axs{i}, t(1), rad2deg(x(1)), 'XDataSource', 'time', 'YDataSource', y_datasources(i));
+                xlim(obj.input_axs{i}, [t(1), t(end)]);
+                ylim(obj.input_axs{i}, [-25, 25]);
+                
+                title(obj.input_axs{i}, input_plot_names(i));
+                ylabel(obj.input_axs{i}, ylabels(i));
+                grid(obj.input_axs{i}, 'on'); 
+                box(obj.input_axs{i}, 'on');
+            end
+            
+            xlabel(obj.input_axs{3}, "Time [s]");
+        end
+        
         function [t, x] = prepare_trajectory(obj, t_trajectory, x_trajectory)
             % Make sure dt is constant for trajectory
             t_0 = t_trajectory(1);
@@ -142,6 +162,7 @@ classdef AircraftVisualizer
             psi = x(:,12);
             
             obj.plot_aircraft();
+            obj = obj.plot_inputs(t, x);
             obj = obj.plot_text();
            
             tic;
@@ -158,6 +179,15 @@ classdef AircraftVisualizer
                 set(obj.TextHandles.e_text_hdl, 'String', sprintf('east = %3.2f m',e(i)))
                 set(obj.TextHandles.h_text_hdl, 'String', sprintf('height = %3.2f m',-d(i)))
 
+                % Update input plots
+                time = t(1:i);
+                delta_a_evolution = rad2deg(x(1:i,13));
+                delta_e_evolution = rad2deg(x(1:i,14));
+                delta_r_evolution = rad2deg(x(1:i,15));
+                refreshdata(obj.InputPlotHandles{1}, 'caller');
+                refreshdata(obj.InputPlotHandles{2}, 'caller');
+                refreshdata(obj.InputPlotHandles{3}, 'caller');
+                
                 % Control the animation speed
                 if obj.timestep * i - toc > 0
                     pause(max(0, obj.timestep * i - toc))
@@ -173,29 +203,19 @@ classdef AircraftVisualizer
                 'Visible','on');
             
             % 3D animation
-            obj.ax_3d = axes(obj.fig, 'position',[0.0 0.0 0.5 1]);
+            obj.ax_3d = axes(obj.fig, 'position',[0.25 0.0 0.5 1]);
             axis off
             set(obj.ax_3d,'color','none');
             axis(obj.ax_3d, 'equal')
             hold on;
             
             % Aircraft inputs
-            input_plot_positions = [0.5 0.7 0.2 0.15;
-                                    0.5 0.5 0.2 0.15;
-                                    0.5 0.3 0.2 0.15;
-                                    0.5 0.1 0.2 0.15;
-                                    0.75 0.7 0.2 0.15;
+            input_plot_positions = [0.75 0.7 0.2 0.15;
                                     0.75 0.5 0.2 0.15;
-                                    0.75 0.3 0.2 0.15;
-                                    0.75 0.1 0.2 0.15];
-                                
-            input_plot_names = ["\delta_a" "\delta_e", "\delta_r" "\delta_t" ...
-                "\delta_{mr1}" "\delta_{mr2}" "\delta_{mr3}" "\delta_{mr4}"];    
+                                    0.75 0.3 0.2 0.15];
                                     
-            for i = 1:8
-                obj.input_axs(i) = axes(obj.fig, 'position', input_plot_positions(i,:));
-                plot(obj.input_axs(i), 1:15);
-                title(obj.input_axs(i), input_plot_names(i));
+            for i = 1:3
+                obj.input_axs{i} = axes(obj.fig, 'position', input_plot_positions(i,:)); 
             end
         end
     end
