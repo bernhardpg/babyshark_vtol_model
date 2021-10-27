@@ -89,7 +89,7 @@ classdef BabysharkModel
         function x_dot = f(obj, t, x)
             % Unpack states
             x = num2cell(x);
-            [n, e, d, u, v, w, p, q, r, phi, theta, psi, delta_a, delta_e, delta_r] = x{:};
+            [u, v, w, p, q, r, phi, theta, psi, delta_a, delta_e, delta_r] = x{:};
 
             % Unpack inputs
             input = obj.input_function(t);
@@ -165,14 +165,8 @@ classdef BabysharkModel
             % Propeller force
             T = obj.rho * obj.D_FW^4 * obj.c_T_FW * delta_t;
             
-            % Kinematics
-            R = [cos(theta)*cos(psi) sin(phi)*sin(theta)*cos(psi)-cos(phi)*sin(psi) cos(phi)*sin(theta)*cos(psi)+sin(psi)*sin(theta);
-                 cos(theta)*sin(psi) sin(phi)*sin(theta)*sin(psi)+cos(phi)*cos(psi) cos(phi)*sin(theta)*sin(psi)-sin(phi)*cos(psi);
-                 -sin(theta) sin(phi)*cos(theta) cos(phi)*cos(theta)];
-            pos_dot = R * [u; v; w];
-            n_dot = pos_dot(1);
-            e_dot = pos_dot(2);
-            d_dot = pos_dot(3);
+            R = [cos(theta)*cos(psi) sin(phi)*sin*(theta)*cos(psi) - cos(phi)*sin(psi) cos(phi)*sin(theta)*cos(psi)+sin(psi)*sin(theta);
+                 cos(theta)*sin(psi) si
             
             phi_dot = p + tan(theta) * (q * sin(phi) + r * cos(phi));
             theta_dot = q * cos(phi) - r * sin(phi);
@@ -191,7 +185,7 @@ classdef BabysharkModel
             q_dot = obj.gam(5)*p*r - obj.gam(6)*(p^2 - r^2) + (1/obj.J_yy) * m;
             r_dot = obj.gam(7)*p*q - obj.gam(1)*q*r + obj.gam(4)*l + obj.gam(8)*n;
 
-            x_dot = [n_dot e_dot d_dot u_dot v_dot w_dot p_dot q_dot r_dot phi_dot theta_dot psi_dot delta_a_dot delta_e_dot delta_r_dot]';
+            x_dot = [u_dot v_dot w_dot p_dot q_dot r_dot phi_dot theta_dot psi_dot delta_a_dot delta_e_dot delta_r_dot]';
         end
 
         % return bounded value clipped between bl and bu

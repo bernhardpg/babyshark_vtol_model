@@ -5,7 +5,7 @@ clc; close all; clear all;
 %%%%%%%%
 
 % Read example maneuver
-recorded_input = readmatrix("example_inputs/roll_maneuver_left_input.csv");
+recorded_input = readmatrix("example_inputs/pitch_maneuver_input.csv");
 dt = readmatrix("example_inputs/dt.csv");
 t_end = length(recorded_input) * dt - dt;
 tspan = [0 t_end];
@@ -18,10 +18,11 @@ input_function = zero_order_hold;
 model = BabysharkModel(input_function);
 
 % Use trim as initial conditions
-% State: [u, v, w, p, q, r, phi, theta, delta_a, delta_e, delta_r];
-y_0 = [model.u_trim 0 model.w_trim ...
+% State: [n, e, d, u, v, w, p, q, r, phi, psi, theta, delta_a, delta_e, delta_r];
+y_0 = [0 0 0 ...
+    model.u_trim 0 model.w_trim ...
     0 0 0 ...
-    0 model.theta_trim ...    
+    0 model.theta_trim 0 ...    
     model.delta_a_trim model.delta_e_trim model.delta_r_trim];
 
 % Simulate model

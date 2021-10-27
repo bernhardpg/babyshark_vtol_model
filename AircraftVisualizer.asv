@@ -82,16 +82,16 @@ classdef AircraftVisualizer
             V_rotated = V_rotated * Rz';
         end
         
-        function render_plot(obj)
+        function render_plot(obj, position)
             axis('equal');
-            obj.update_axis()
+            obj.update_axis(position)
             set(gcf,'Color',[1 1 1])
             view([30 10])
             camlight('left');
             material('dull');
         end
         
-        function update_axis(obj)
+        function update_axis(obj, position)
             viewbox = [-1 1 -1 1 -1 1] * 2 * obj.aircraft_dimensions;
             axis(viewbox);
         end
@@ -105,8 +105,8 @@ classdef AircraftVisualizer
                  'FaceLighting',    'gouraud',     ...
                  'AmbientStrength', 0.15,...
                  'Parent', obj.aircraft_transformation); hold on
-             scatter3(0,0,0,'filled');
-             obj.render_plot();
+             %scatter3(0,0,0,'filled');
+             obj.render_plot([0,0,0]);
         end
         
         function [t, x] = prepare_trajectory(obj, t_trajectory, x_trajectory)
@@ -128,17 +128,11 @@ classdef AircraftVisualizer
             psi = x(:,12);
             
             obj.plot_aircraft();
-            time_text_hdl = text(0.55 * obj.aircraft_dimensions * 1.5, 0, 1 * obj.aircraft_dimensions * 1.5, ...
+            time_text_hdl = text(0.55 * obj.aircraft_dimensions * 1.5, 0, 0.55 * obj.aircraft_dimensions * 1.5, ...
                 't = 0 sec',...
                 'FontSize', 20);
-            n_text_hdl = text(0.55 * obj.aircraft_dimensions * 1.5, 0, 0.9 * obj.aircraft_dimensions * 1.5, ...
-                'north = 0 m',...
-                'FontSize', 20);
-            e_text_hdl = text(0.55 * obj.aircraft_dimensions * 1.5, 0, 0.8 * obj.aircraft_dimensions * 1.5, ...
-                'east = 0 m',...
-                'FontSize', 20);
-            h_text_hdl = text(0.55 * obj.aircraft_dimensions * 1.5, 0, 0.7 * obj.aircraft_dimensions * 1.5, ...
-                'height = 0 m',...
+            time_text_phdl = text(0.55 * obj.aircraft_dimensions * 1.5, 0, 0.55 * obj.aircraft_dimensions * 1.5, ...
+                't = 0 sec',...
                 'FontSize', 20);
 
             tic;
@@ -151,9 +145,6 @@ classdef AircraftVisualizer
                 
                 % Update text
                 set(time_text_hdl, 'String', sprintf('t = %3.2f sec',t(i)))
-                set(n_text_hdl, 'String', sprintf('north = %3.2f m',n(i)))
-                set(e_text_hdl, 'String', sprintf('east = %3.2f m',e(i)))
-                set(h_text_hdl, 'String', sprintf('height = %3.2f m',-d(i)))
 
                 % Control the animation speed
                 if obj.timestep * i - toc > 0
