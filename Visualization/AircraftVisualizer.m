@@ -19,7 +19,7 @@ classdef AircraftVisualizer
             obj.Model3D.color = [0.85 0.85 0.9];
             
             % Initialize visualizer object %
-            model = stlread('3d_files/babyshark.stl');
+            model = stlread('3DFiles/babyshark.stl');
             obj.Model3D.stl_data.vertices = model.vertices;
             obj.Model3D.stl_data.faces = model.faces;
             obj = obj.initialize_aircraft_model();

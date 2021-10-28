@@ -37,5 +37,3 @@ y_0 = [0 0 -100 ...
 % Visualize trajectory
 visualizer = AircraftVisualizer();
 visualizer.plot_trajectory(t_sim, y_sim);
-
-
