@@ -7,10 +7,8 @@ classdef AircraftVisualizer
     methods
         function obj = AircraftVisualizer()
             obj.Animation.timestep = 0.02;
-            obj.Animation.scaling = 1.0;
-            
-            % Set this to true to show live plot of position
-            obj.Animation.show_position_plot = false;
+            obj.Animation.zoom = 1.5;
+            obj.Animation.show_position_plot = true;
             
             obj.Model3D.cg_position_from_front = -0.494;
             obj.Model3D.cg_position_from_bottom = 0.25;
@@ -64,8 +62,8 @@ classdef AircraftVisualizer
             temp_min = min(V);
             ranges = abs(temp_max - temp_min);
             y_range = ranges(2);
-            scaling_factor = y_range / wingspan;
-            V_scaled = V / scaling_factor;
+            zoom_factor = y_range / wingspan;
+            V_scaled = V / zoom_factor;
         end
         
         function V_rotated = rotate_vertices(~, V, phi, theta, psi)
@@ -88,7 +86,7 @@ classdef AircraftVisualizer
         
         function render_plot(obj)
             axis(obj.Animation.PlotAxes.ax_3d, 'equal');
-            viewbox = [-1 1 -1 1 -1 1] * (1/obj.Animation.scaling) * obj.Model3D.aircraft_dimensions;
+            viewbox = [-1 1 -1 1 -1 1] * (1/obj.Animation.zoom) * obj.Model3D.aircraft_dimensions;
             axis(obj.Animation.PlotAxes.ax_3d, viewbox);
             set(gcf,'Color',[1 1 1])
             view(obj.Animation.PlotAxes.ax_3d, [30 10])
