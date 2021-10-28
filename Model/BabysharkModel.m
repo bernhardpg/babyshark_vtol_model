@@ -134,14 +134,14 @@ classdef BabysharkModel
 
         function x_dot = f(obj, t, x)
             % Unpack states
-            x = num2cell(x);
-            [n, e, d, u, v, w, p, q, r, phi, theta, psi, delta_a, delta_e, delta_r] = x{:};
+            x_cell = num2cell(x);
+            [n, e, d, u, v, w, p, q, r, phi, theta, psi, delta_a, delta_e, delta_r] = x_cell{:};
 
             % Unpack inputs
             input = obj.input_function(t, x);
-            input = num2cell(input);
+            input_cell = num2cell(input);
             [delta_a_sp, delta_e_sp, delta_r_sp, delta_t,...
-                delta_mr_1, delta_mr_2, delta_mr_3, delta_mr_4] = input{:};
+                delta_mr_1, delta_mr_2, delta_mr_3, delta_mr_4] = input_cell{:};
 
             % Calculate control surfaces
             delta_a_dot = obj.bound(-delta_a / obj.T_servo + delta_a_sp / obj.T_servo, -obj.delta_rate_lim, obj.delta_rate_lim);

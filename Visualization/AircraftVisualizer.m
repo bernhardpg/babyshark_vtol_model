@@ -8,7 +8,7 @@ classdef AircraftVisualizer
         function obj = AircraftVisualizer()
             % Animation parameters %
             obj.Animation.timestep = 0.01;
-            obj.Animation.zoom = 1.25;
+            obj.Animation.zoom = 1.0;
             obj.Animation.show_position_plot = true;
             
             % 3D Model constants %
