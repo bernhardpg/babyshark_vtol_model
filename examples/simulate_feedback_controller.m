@@ -1,5 +1,7 @@
 clc; close all; clear all;
 
+% NOTE: Remember to add all the folders to path before running
+
 %%%%%%%%
 % Example file that simulates the model with a simple feedback controller
 % and visualizes the simulated response.

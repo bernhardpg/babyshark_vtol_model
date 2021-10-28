@@ -1,5 +1,7 @@
 clc; close all; clear all;
 
+% NOTE: Remember to add all the folders to path before running
+
 %%%%%%%%
 % Example file that loads recorded inputs, simulates the model and
 % visualizes the aircraft response.
