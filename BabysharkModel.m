@@ -30,10 +30,13 @@ classdef BabysharkModel
         T_servo = 0.0280;
         D_fw = 0.3810;
         c_T_fw = 0.0840;
-        D_mr = 0.3810;
-        c_T_mr = 0.0840;
-        c_Q_mr = 0.0840;
+        D_mr = 0.4064;
+        c_T_mr = 0.0994;
+        c_Q_mr = 0.006338;
         
+        delta_a_max = 25 / 180 * pi;
+        delta_e_max = 25 / 180 * pi;
+        delta_r_max = 22 / 180 * pi;
         
         % Trim parameters
         V_trim = 21;
@@ -118,6 +121,17 @@ classdef BabysharkModel
             delta_e_dot = obj.bound(-delta_e / obj.T_servo + delta_e_sp / obj.T_servo, -obj.delta_rate_lim, obj.delta_rate_lim);
             delta_r_dot = obj.bound(-delta_r / obj.T_servo + delta_r_sp / obj.T_servo, -obj.delta_rate_lim, obj.delta_rate_lim);
 
+            % Constrain control surfaces to max angle
+            if abs(delta_a) >= obj.delta_a_max
+                delta_a_dot = 0;
+            end
+            if abs(delta_e) >= obj.delta_e_max
+                delta_e_dot = 0;
+            end
+            if abs(delta_r) >= obj.delta_r_max
+                delta_r_dot = 0;
+            end
+            
             % Model is around perturbation control surface deflections
             delta_e_pert = (delta_e - obj.delta_e_trim);
             delta_r_pert = (delta_r - obj.delta_r_trim);
@@ -126,8 +140,13 @@ classdef BabysharkModel
             % Aerodynamic quantities
             V = sqrt(u^2 + v^2 + w^2);
             q_bar = (1/2) * obj.rho * V^2;
-            alpha = atan(w/u);
-            beta = asin(v/V);
+            if V < 1
+                alpha = 0; % neglect aoa and ssa at small airspeeds
+                beta = 0;
+            else
+                alpha = atan(w/u);
+                beta = asin(v/V);
+            end
 
             % Nondimensionalize rates
             p_hat = obj.b * p / (2 * obj.V_trim);
