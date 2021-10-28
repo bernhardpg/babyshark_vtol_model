@@ -116,7 +116,7 @@ classdef AircraftVisualizer
             for i = 1:3
                 obj.Animation.InputPlotHandles{i} = plot(obj.Animation.PlotAxes.ax_inputs{i}, t(1), rad2deg(x(1)), 'XDataSource', 'time', 'YDataSource', y_datasources(i));
                 xlim(obj.Animation.PlotAxes.ax_inputs{i}, [t(1), t(end)]);
-                ylim(obj.Animation.PlotAxes.ax_inputs{i}, [-25, 25]);
+                ylim(obj.Animation.PlotAxes.ax_inputs{i}, [-27, 27]);
                 
                 title(obj.Animation.PlotAxes.ax_inputs{i}, input_plot_names(i));
                 ylabel(obj.Animation.PlotAxes.ax_inputs{i}, ylabels(i));

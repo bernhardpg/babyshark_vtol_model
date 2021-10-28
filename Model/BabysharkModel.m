@@ -10,6 +10,15 @@ classdef BabysharkModel
     % State: [n, e, d, u, v, w, p, q, r, phi, theta, psi, delta_a, delta_e, delta_r]
     % Input: [delta_a_sp delta_e_sp delta_r_sp delta_t delta_mr_1 delta_mr_2 delta_mr3 delta_mr_4]
     %
+    % delta_a, delta_e, delta_r denote the actual control surface
+    % deflections in radians.
+    %
+    % delta_a_sp, delta_e_sp, delta_r_sp denote their respective setpoints
+    % in radians.
+    %
+    % delta_t, delta_mr_i, i = [1,4], denotes the squared RPS (rev/second)
+    % for the fixed-wing and multirotor propellers.
+    %
     % Note: that for small airspeeds (V < 1), the AoA and SSA will are set
     % equal to 0 to avoid numerical problems in this flight regime.
     % 
