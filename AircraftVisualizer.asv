@@ -6,38 +6,45 @@ classdef AircraftVisualizer
     
     methods
         function obj = AircraftVisualizer()
+            %%%%%%%%%%%%%%%%%%%%%%%%
             % Animation parameters %
+            %%%%%%%%%%%%%%%%%%%%%%%%
             obj.Animation.timestep = 0.01;
             obj.Animation.zoom = 1.25;
             obj.Animation.show_position_plot = true;
             
+            %%%%%%%%%%%%%%%%%%%%%%
             % 3D Model constants %
+            %%%%%%%%%%%%%%%%%%%%%%
             obj.Model3D.cg_position_from_front = -0.494;
             obj.Model3D.cg_position_from_bottom = 0.25;
             obj.Model3D.wingspan = 2.5;
             obj.Model3D.alpha = 1.0;
-            obj.Model3D.color = [0.85 0.85 0.9];
+            obj.Model3D.color = [0.9 0.9 0.9];
             
-            % Initialize visualizer object %
+            
+            % Initialize voisu
             model = stlread('3d_files/babyshark.stl');
             obj.Model3D.stl_data.vertices = model.vertices;
             obj.Model3D.stl_data.faces = model.faces;
             obj = obj.initialize_aircraft_model();
-            obj.Model3D.max_aircraft_dimensions = max(max(sqrt(sum(obj.Model3D.stl_data.vertices.^2, 2))));
+            
+            obj.Model3D.aircraft_dimensions = max(max(sqrt(sum(obj.Model3D.stl_data.vertices.^2, 2))));
             obj = obj.create_ax_object();
-            obj.Animation.aircraft_transformation = hgtransform('Parent', obj.Animation.PlotAxes.ax_3d);
+            obj.Animation.aircraft_transformation = hgtransform('Parent', obj.Animation.PlotAxes.ax_3d); % Transformation object that is used to rotate the aircraft            
         end
         
         function obj = initialize_aircraft_model(obj)
+            % Import an STL mesh, returning a PATCH-compatible face-vertex structure
             V0 = obj.Model3D.stl_data.vertices;
 
-            % Rotate the aircraft 3d model to initial position, with positive x-axis out of nose
+            % Rotate the aircraft to initial position, with positive x-axis out of nose
             initial_phi = pi/2;
             initial_theta = 0;
             initial_psi = pi/2;
             V0 = obj.rotate_vertices(V0, initial_phi, initial_theta, initial_psi);
 
-            % Scale the aircraft 3d model to the correct size
+            % Scale the aircraft to the correct size
             V0 = obj.scale_aircraft(obj.Model3D.wingspan, V0);
 
             % Move origin to front of aircraft nose
@@ -47,7 +54,7 @@ classdef AircraftVisualizer
             aircraft_length = ranges(1);
             V0 = V0 - [aircraft_length obj.Model3D.wingspan/2 0];
 
-            % Move model origin to correct aircraft cg
+            % Move origin to cg
             cg_position = [...
                 obj.Model3D.cg_position_from_front ...
                 0 ...
@@ -87,7 +94,7 @@ classdef AircraftVisualizer
         
         function render_plot(obj)
             axis(obj.Animation.PlotAxes.ax_3d, 'equal');
-            viewbox = [-1 1 -1 1 -1 1] * (1/obj.Animation.zoom) * obj.Model3D.max_aircraft_dimensions;
+            viewbox = [-1 1 -1 1 -1 1] * (1/obj.Animation.zoom) * obj.Model3D.aircraft_dimensions;
             axis(obj.Animation.PlotAxes.ax_3d, viewbox);
             set(gcf,'Color',[1 1 1])
             view(obj.Animation.PlotAxes.ax_3d, [30 10])
@@ -127,7 +134,8 @@ classdef AircraftVisualizer
             xlabel(obj.Animation.PlotAxes.ax_inputs{3}, "Time [s]");
         end
         
-        function [t, x] = interpolate_trajectory_for_animation(obj, t_trajectory, x_trajectory)
+        function [t, x] = prepare_trajectory(obj, t_trajectory, x_trajectory)
+            % Make sure dt is constant for trajectory
             t_0 = t_trajectory(1);
             t_end = t_trajectory(end);
             t = t_0:obj.Animation.timestep:t_end;
@@ -135,11 +143,7 @@ classdef AircraftVisualizer
         end
         
         function obj = plot_text(obj)
-            obj.Animation.time_text_handle = text(...
-                obj.Animation.PlotAxes.ax_3d, ...
-                0 * obj.Model3D.max_aircraft_dimensions, ...
-                0 * obj.Model3D.max_aircraft_dimensions, ...
-                1 * obj.Model3D.max_aircraft_dimensions, ...
+            obj.Animation.time_text_handle = text(obj.Animation.PlotAxes.ax_3d, 0.55 * obj.Model3D.aircraft_dimensions * 1.5, 0, 1 * obj.Model3D.aircraft_dimensions * 1.5, ...
                 't = 0 sec',...
                 'FontSize', 20);
         end
@@ -162,7 +166,7 @@ classdef AircraftVisualizer
         end
         
         function plot_trajectory(obj, t_trajectory, x_trajectory)
-            [t, x] = obj.interpolate_trajectory_for_animation(t_trajectory, x_trajectory);
+            [t, x] = obj.prepare_trajectory(t_trajectory, x_trajectory);
 
             n = x(:,1);
             e = x(:,2);
@@ -187,11 +191,11 @@ classdef AircraftVisualizer
                 Mz = makehgtform('zrotate', -psi(i));
                 set(obj.Animation.aircraft_transformation, 'Matrix', Mx*My*Mz);
                 
-                % Update time text
+                % Update text
                 set(obj.Animation.time_text_handle, 'String', sprintf('t = %3.2f sec',t(i)))
 
-                % Update position plot
                 if obj.Animation.show_position_plot
+                    % Update position plot
                     pos_n = pos(1:i,1);
                     pos_w = pos(1:i,2);
                     pos_h = pos(1:i,3);
@@ -207,7 +211,7 @@ classdef AircraftVisualizer
                 refreshdata(obj.Animation.InputPlotHandles{2}, 'caller');
                 refreshdata(obj.Animation.InputPlotHandles{3}, 'caller');
                 
-                % Control the animation speed to be realtime
+                % Control the animation speed
                 if obj.Animation.timestep * i - toc > 0
                     pause(max(0, obj.Animation.timestep * i - toc))
                 end
@@ -218,7 +222,7 @@ classdef AircraftVisualizer
             obj.Animation.fig = figure;
             screensize = get(0,'ScreenSize');
             
-            % Show position plot and move other plots
+            % Show position plot and move others plot
             if obj.Animation.show_position_plot
                 obj.Animation.PlotAxes.ax_pos = axes(obj.Animation.fig, 'position',[0.05 0.5 0.2 0.4]);
                 

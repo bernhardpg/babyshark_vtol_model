@@ -1,8 +1,30 @@
 classdef BabysharkModel
-    % State: [u, v, w, p, q, r, phi, theta, psi, delta_a, delta_e, delta_r]
+    % BabysharkModel is a full dynamic model for the Babyshark VTOL UAV.
+    %
+    % Simulates the 12 dimensional rigid-body equations of motion that
+    % govern the aircraft motion. The nonlinear aerodynamic model is
+    % derived from flight-test data around trim conditions.
+    % In addition, the model simulates the control surface dynamics for the
+    % three control surfaces delta_a, delta_e, delta_r.
+    %
+    % State: [n, e, d, u, v, w, p, q, r, phi, theta, psi, delta_a, delta_e, delta_r]
     % Input: [delta_a_sp delta_e_sp delta_r_sp delta_t delta_mr_1 delta_mr_2 delta_mr3 delta_mr_4]
+    %
+    % Note: that for small airspeeds (V < 1), the AoA and SSA will are set
+    % equal to 0 to avoid numerical problems in this flight regime.
+    % 
+    %
+    % model =  BabysharkModel(input_function)
+    %   creates a nonlinear model of the Babyshark 260 VTOL.
+    %   @arg input_function:
+    %       Function that will be called to get the input to the model.
+    %       input_function is expected to take the current time and state
+    %       (t, x) as input, and return the 8-dimensional input vector.
     
     properties
+
+        input_function;
+        
         % Airframe properties
         b = 2.5;
         c_bar = 0.242;
@@ -89,10 +111,6 @@ classdef BabysharkModel
 
         % Rudder-Pitch coupling coefficient
         c_m_delta_r_sq = -0.736842105263158;
-        
-        input_function; % Function that will be called to get input to the model
-        
-
     end
     methods
         function obj = BabysharkModel(input_function)
@@ -111,7 +129,7 @@ classdef BabysharkModel
             [n, e, d, u, v, w, p, q, r, phi, theta, psi, delta_a, delta_e, delta_r] = x{:};
 
             % Unpack inputs
-            input = obj.input_function(t);
+            input = obj.input_function(t, x);
             input = num2cell(input);
             [delta_a_sp, delta_e_sp, delta_r_sp, delta_t,...
                 delta_mr_1, delta_mr_2, delta_mr_3, delta_mr_4] = input{:};
@@ -244,8 +262,6 @@ classdef BabysharkModel
             u_dot = r*v - q*w + (1/obj.mass) * (f_x);
             v_dot = p*w - r*u + (1/obj.mass) * (f_y);
             w_dot = q*u - p*v + (1/obj.mass) * (f_z);
-            
-            
 
             p_dot = obj.gam(1)*p*q - obj.gam(2)*q*r + obj.gam(3) * tau_x + obj.gam(4) * tau_z;
             q_dot = obj.gam(5)*p*r - obj.gam(6)*(p^2 - r^2) + (1/obj.J_yy) * tau_y;
@@ -254,8 +270,8 @@ classdef BabysharkModel
             x_dot = [n_dot e_dot d_dot u_dot v_dot w_dot p_dot q_dot r_dot phi_dot theta_dot psi_dot delta_a_dot delta_e_dot delta_r_dot]';
         end
 
-        % return bounded value clipped between bl and bu
-        function y = bound(obj, x,bl,bu)
+        % Return bounded value clipped between bl and bu
+        function y = bound(~, x,bl,bu)
           y = min(max(x,bl),bu);
         end
     end
