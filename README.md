@@ -1,7 +1,7 @@
 # Dynamic Model of the Foxtech Babyshark 260 VTOL UAV
 Full dynamic model for the Babyshark 260 VTOL UAV.
 
-<img src="https://user-images.githubusercontent.com/35483844/139251285-83ad2f6a-838a-4923-a4a2-87bb0418f2e3.jpg" width="800">
+<img src="https://user-images.githubusercontent.com/35483844/139727366-eb39f3f5-01c7-4e4c-86a9-0f0902c28979.png" width="800">
 
 The repo contains three main files:
 1. *model/BabysharkModel.m*: Aircraft model.
