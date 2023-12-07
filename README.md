@@ -3,12 +3,15 @@ Full dynamic model for the Babyshark 260 VTOL UAV.
 
 <img src="https://user-images.githubusercontent.com/35483844/139727366-eb39f3f5-01c7-4e4c-86a9-0f0902c28979.png" width="800">
 
+**If you use this model, please cite the original thesis:**
+> B. P. Graesdal, “Full Nonlinear System Identification for a Vertical-Takeoff-and-Landing Unmanned Aerial Vehicle,” Master thesis, NTNU, 2021. Available: https://ntnuopen.ntnu.no/ntnu-xmlui/handle/11250/2981320
+
 The repo contains three main files:
 1. *model/BabysharkModel.m*: Aircraft model.
 2. *visualizer/AircraftVisualizer.m*: Simple 3D visualization tool for the babyshark model.
 3. *3d_files/babyshark.stl*: 3D model of the Babyshark created for this work.
 
-The model is written entirely in Matlab. However, porting the model to any other language should be straight forward. All of the required equations and parameters can be found in *BabysharkModel.m*.
+The model is written entirely in Matlab. However, porting the model to any other language should be straightforward. All of the required equations and parameters can be found in *BabysharkModel.m*.
 
 ## About the model
 The model simulates the 12 dimensional rigid-body equations of motion that
