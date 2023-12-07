@@ -54,5 +54,8 @@ equal to 0 to avoid numerical problems in this flight regime.
 * The model does not implement constraints on the maximum multirotor or the fixed-wing propeller speed.
 
 ## More information
-This aircraft model is the result of my master's thesis, which can be found in the file *documentation/full_nonlinear_system_identification_for_a_vtol_uav.pdf*. The thesis includes detailed information on the model, the modelling approach, model performance, and future work. The source code for the entire system identification procedure can be found at: [source code](https://github.com/bernhardpg/vtol-system-identification).
+This aircraft model is the result of my master's thesis, which can be found at:
+> B. P. Graesdal, “Full Nonlinear System Identification for a Vertical-Takeoff-and-Landing Unmanned Aerial Vehicle,” Master thesis, NTNU, 2021. Available: https://ntnuopen.ntnu.no/ntnu-xmlui/handle/11250/2981320
+
+The thesis includes detailed information on the model, the modelling approach, model performance, and future work. The source code for the entire system identification procedure can be found at: [source code](https://github.com/bernhardpg/vtol-system-identification).
 
