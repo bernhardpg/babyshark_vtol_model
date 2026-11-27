@@ -6,6 +6,16 @@ Full dynamic model for the Babyshark 260 VTOL UAV.
 **If you use this model, please cite the original thesis:**
 > B. P. Graesdal, “Full Nonlinear System Identification for a Vertical-Takeoff-and-Landing Unmanned Aerial Vehicle,” Master thesis, NTNU, 2021. Available: https://ntnuopen.ntnu.no/ntnu-xmlui/handle/11250/2981320
 
+```bibtex
+@mastersthesis{graesdal2021vtol,
+  author = {Graesdal, Bernhard Paus},
+  title  = {Full Nonlinear System Identification for a Vertical-Takeoff-and-Landing Unmanned Aerial Vehicle},
+  school = {Norwegian University of Science and Technology (NTNU)},
+  year   = {2021},
+  url    = {https://ntnuopen.ntnu.no/ntnu-xmlui/handle/11250/2981320}
+}
+```
+
 The repo contains three main files:
 1. *model/BabysharkModel.m*: Aircraft model.
 2. *visualizer/AircraftVisualizer.m*: Simple 3D visualization tool for the babyshark model.
