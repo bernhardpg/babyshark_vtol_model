@@ -61,4 +61,7 @@ The thesis includes detailed information on the model, the modelling approach, m
 
 
 ## License
-Everything in this repo, including the code, data and 3D files, is released under the [MIT License](LICENSE).
+The code (`.m` files) is released under the [MIT License](LICENSE).
+
+All other files, including the example inputs, the 3D model and the thesis, are released under the [Creative Commons Attribution 4.0 International License (CC BY 4.0)](LICENSE-CC-BY-4.0). You may use them for any purpose, including commercially, as long as you credit this work by citing:
+> B. P. Graesdal, “Full Nonlinear System Identification for a Vertical-Takeoff-and-Landing Unmanned Aerial Vehicle,” Master thesis, NTNU, 2021. Available: https://ntnuopen.ntnu.no/ntnu-xmlui/handle/11250/2981320
