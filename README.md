@@ -59,3 +59,6 @@ This aircraft model is the result of my master's thesis, which can be found at:
 
 The thesis includes detailed information on the model, the modelling approach, model performance, and future work. The source code for the entire system identification procedure can be found at: [source code](https://github.com/bernhardpg/vtol-system-identification).
 
+
+## License
+Everything in this repo, including the code, data and 3D files, is released under the [MIT License](LICENSE).
